@@ -2,8 +2,6 @@
 import { assert } from "chai";
 import path from "path";
 
-import { ExampleHardhatRuntimeEnvironmentField } from "../src/ExampleHardhatRuntimeEnvironmentField";
-
 import { useEnvironment } from "./helpers";
 
 describe("Integration tests examples", function () {

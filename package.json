@@ -30,9 +30,12 @@
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.1.1",
     "@types/chai": "^4.1.7",
+    "@types/debug": "^4.1.7",
     "@types/fs-extra": "^5.0.4",
+    "@types/lodash.clonedeep": "^4.5.7",
     "@types/mocha": "^5.2.6",
     "@types/node": "^8.10.38",
+    "@types/prompt-sync": "^4.1.1",
     "chai": "^4.2.0",
     "ethers": "^5.0.0",
     "hardhat": "^2.0.0",
@@ -48,5 +51,11 @@
     "@nomiclabs/hardhat-ethers": "^2.1.1",
     "ethers": "^5.0.0",
     "hardhat": "^2.0.0"
+  },
+  "dependencies": {
+    "debug": "^4.3.4",
+    "enquirer": "^2.3.6",
+    "lodash.clonedeep": "^4.5.0",
+    "prompt-sync": "^4.2.0"
   }
 }

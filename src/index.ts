@@ -1,49 +1,56 @@
-import { extendConfig, extendEnvironment } from "hardhat/config";
-import { lazyObject } from "hardhat/plugins";
-import { HardhatConfig, HardhatUserConfig } from "hardhat/types";
-import path from "path";
+import '@nomiclabs/hardhat-ethers'
+import path from 'path'
 
-import { ExampleHardhatRuntimeEnvironmentField } from "./ExampleHardhatRuntimeEnvironmentField";
-// This import is needed to let the TypeScript compiler know that it should include your type
-// extensions in your npm package's types file.
-import "./type-extensions";
+import { extendConfig, extendEnvironment } from 'hardhat/config'
+import { lazyFunction } from 'hardhat/plugins'
+import { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
 
-extendConfig(
-  (config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
-    // We apply our default config here. Any other kind of config resolution
-    // or normalization should be placed here.
-    //
-    // `config` is the resolved config, which will be used during runtime and
-    // you should modify.
-    // `userConfig` is the config as provided by the user. You should not modify
-    // it.
-    //
-    // If you extended the `HardhatConfig` type, you need to make sure that
-    // executing this function ensures that the `config` object is in a valid
-    // state for its type, including its extensions. For example, you may
-    // need to apply a default value, like in this example.
-    const userPath = userConfig.paths?.newPath;
+import { getWallet, getWallets } from './lib/wallet'
+import { getSigner, getSigners } from './lib/signer'
+import { getProvider } from './lib/provider'
+import { logDebug, logError } from './helpers/logger'
 
-    let newPath: string;
-    if (userPath === undefined) {
-      newPath = path.join(config.paths.root, "newPath");
+import './type-extensions'
+import './tasks'
+
+extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
+  const userPath = userConfig.paths?.accounts
+
+  let accounts: string
+  if (userPath === undefined) {
+    accounts = path.join(config.paths.root, '.keystore')
+  } else {
+    if (path.isAbsolute(userPath)) {
+      accounts = userPath
     } else {
-      if (path.isAbsolute(userPath)) {
-        newPath = userPath;
-      } else {
-        // We resolve relative paths starting from the project's root.
-        // Please keep this convention to avoid confusion.
-        newPath = path.normalize(path.join(config.paths.root, userPath));
-      }
+      accounts = path.normalize(path.join(config.paths.root, userPath))
     }
-
-    config.paths.newPath = newPath;
   }
-);
+
+  logDebug(`Using accounts directory: ${accounts}`)
+  config.paths.accounts = accounts
+})
 
 extendEnvironment((hre) => {
-  // We add a field to the Hardhat Runtime Environment here.
-  // We use lazyObject to avoid initializing things until they are actually
-  // needed.
-  hre.example = lazyObject(() => new ExampleHardhatRuntimeEnvironmentField());
-});
+  if (process.stdout.isTTY) {
+    logError('REPL environment detected!')
+  }
+
+  hre.accounts = {
+    getWallet: lazyFunction(() => (name?: string, password?: string) =>
+      getWallet(hre.config.paths.accounts, name, password),
+    ),
+    getWallets: lazyFunction(() => (name?: string, password?: string) =>
+      getWallets(hre.config.paths.accounts, name, password),
+    ),
+    getSigner: lazyFunction(() => (name?: string, password?: string) =>
+      getSigner(hre.network, hre.config.paths.accounts, name, password),
+    ),
+    getSigners: lazyFunction(() => (name?: string, password?: string) =>
+      getSigners(hre.network, hre.config.paths.accounts, name, password),
+    ),
+    getProvider: lazyFunction((name?: string, password?: string) => () =>
+      getProvider(hre.network, hre.config.paths.accounts, name, password),
+    ),
+  }
+})
