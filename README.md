@@ -1,4 +1,4 @@
-# Hardhat TypeScript plugin boilerplate
+# Hardhat Secure Accounts
 
 This is a sample Hardhat plugin written in TypeScript. Creating a Hardhat plugin
 can be as easy as extracting a part of your config into a different file and
