@@ -5,12 +5,11 @@ import { task, subtask } from 'hardhat/config'
 
 import { getSecureAccounts } from './lib/account'
 import { logDebug } from './helpers/logger'
+import { getPasswordOrAsk, getStringOrAsk } from './lib/ask'
+import { SecureAccountPluginError } from './helpers/error'
 
 task('accounts', 'Manage local accounts')
   .addOptionalPositionalParam('action', 'Action to perform: list, import, delete')
-  .addOptionalParam('name', '[new] Name of the account')
-  .addOptionalParam('mnemonic', '[new] Mnemonic to derive the account from')
-  .addOptionalParam('password', '[new] Password used to encrypt the account')
   .setAction(async (taskArgs, hre) => {
     if (taskArgs.action === undefined) {
       console.log('No action specified')
@@ -26,13 +25,28 @@ task('accounts', 'Manage local accounts')
   })
 
 subtask('accounts:new', 'Add a new account via mnemonic.')
-  .addParam('name', 'Name of the account')
-  .addParam('mnemonic', 'Mnemonic to derive the account from')
-  .addParam('password', 'Password used to encrypt the account')
+  .addOptionalParam('name', 'Name of the account')
+  .addOptionalParam('mnemonic', 'Mnemonic to derive the account from')
+  .addOptionalParam('password', 'Password used to encrypt the account')
   .setAction(async (taskArgs, hre) => {
-    const wallet = hre.ethers.Wallet.fromMnemonic(taskArgs.mnemonic)
-    const encrypted = await wallet.encrypt(taskArgs.password)
-    const fileName = path.join(hre.config.paths.accounts, `${taskArgs.name}.json`)
+    // Get account name
+    const accounts = getSecureAccounts(hre.config.paths.accounts)
+    const name = await getStringOrAsk('name', 'Enter account name', taskArgs.name)
+    logDebug(`Account name: ${name}`)
+
+    const fileName = path.join(hre.config.paths.accounts, `${name}.json`)
+
+    if (accounts.map((a) => a.name).includes(name)) {
+      throw new SecureAccountPluginError(`Account with name ${name} already exists!`)
+    }
+
+    // Get account mnemonic
+    const mnemonic = await getStringOrAsk('mnemonic', 'Enter mnemonic', taskArgs.mnemonic)
+    const wallet = hre.ethers.Wallet.fromMnemonic(mnemonic)
+
+    // Get account password and ecrypt wallet
+    const password = await getPasswordOrAsk(taskArgs.password)
+    const encrypted = await wallet.encrypt(password)
 
     // Ensure accounts dir exists
     if (!fs.existsSync(hre.config.paths.accounts)) {
@@ -42,48 +56,20 @@ subtask('accounts:new', 'Add a new account via mnemonic.')
 
     // Write encrypted account to file
     fs.writeFileSync(fileName, encrypted, 'utf8')
+    console.log(`Saved account to ${fileName}`)
   })
 
-subtask('accounts:list', 'List local accounts').setAction(async (taskArgs, hre) => {
+subtask('accounts:list', 'List local accounts').setAction(async (_, hre) => {
   const accounts = getSecureAccounts(hre.config.paths.accounts)
 
   console.log('Managed accounts:')
   for (const account of accounts) {
-    console.log(`> ${account.name}`)
+    console.log(`> ${account.name} - 0x${JSON.parse(account.json).address}`)
   }
 })
 
-subtask('accounts:unlock', 'Unlock an account').setAction(async (taskArgs, hre) => {
-  const signer = await hre.accounts.getSigner('account-goerli-1', 'batata')
+subtask('accounts:unlock', 'Unlock account').setAction(async (_, hre) => {
+  const signer = await hre.accounts.getSigner()
   console.log(`Account ${signer.address} unlocked`)
-  console.log(await signer.signMessage('test'))
-
-  const wallet = await hre.accounts.getWallet('account-goerli-1', 'batata')
-  console.log(`Address is ${wallet.address}`)
-  console.log(await wallet.signMessage('test'))
-
-  const wallets = await hre.accounts.getWallets('account-goerli-1', 'batata')
-  wallets.map((w) => console.log(`Address is ${w.address}`))
-  for (const wallet of wallets) {
-    console.log(await wallet.signMessage('test'))
-  }
-
-  const signers = await hre.accounts.getSigners('account-goerli-1', 'batata')
-  signers.map((s) => console.log(`Address is ${s.address}`))
-  for (const signer of signers) {
-    console.log(await signer.signMessage('test'))
-  }
-
+  return signer
 })
-
-subtask('accounts:inject', 'Inject accounts into network config').setAction(
-  async (taskArgs, hre) => {
-    const signers = await hre.ethers.getSigners()
-    signers.map((s) => console.log(s.address))
-
-    await hre.accounts.getProvider()
-
-    const signers2 = await hre.ethers.getSigners()
-    signers2.map((s) => console.log(s.address))
-  },
-)

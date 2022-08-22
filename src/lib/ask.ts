@@ -45,6 +45,20 @@ export async function getPasswordOrAsk(_password: string | undefined): Promise<s
   return password
 }
 
+export async function getStringOrAsk(
+  name: string,
+  question: string,
+  _value: string | undefined,
+): Promise<string> {
+  logDebug(
+    _value === undefined
+      ? `No ${name} provided, prompting user`
+      : `${name} provided, skipping prompt.`,
+  )
+
+  return _value ?? (await askForString(question))
+}
+
 async function askForAccount(accounts: SecureAccount[]): Promise<string> {
   const question = 'Choose an account to unlock'
   let answer: string = ''
@@ -95,6 +109,25 @@ async function askForPassword(): Promise<string> {
       message: question,
     })
     answer = response.password
+  }
+
+  return answer
+}
+
+async function askForString(question: string): Promise<string> {
+  let answer: string = ''
+
+  if (isRepl) {
+    // const PromptSync = (await import('prompt-sync')).default()
+    // var n = PromptSync('How many more times? ')
+    // console.log(n)
+  } else {
+    const response = await Enquirer.prompt<{ name: string }>({
+      type: 'input',
+      name: 'name',
+      message: question,
+    })
+    answer = response.name
   }
 
   return answer

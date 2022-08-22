@@ -33,7 +33,7 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
 
 extendEnvironment((hre) => {
   if (process.stdout.isTTY) {
-    logError('REPL environment detected!')
+    logError('REPL environment not supported!')
   }
 
   hre.accounts = {
