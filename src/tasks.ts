@@ -8,8 +8,19 @@ import { logDebug } from './helpers/logger'
 import { getPasswordOrAsk, getStringOrAsk } from './lib/ask'
 import { SecureAccountPluginError } from './helpers/error'
 
-task('accounts', 'Manage local accounts')
+export const TASK_ACCOUNTS = 'accounts'
+export const TASK_ACCOUNTS_NEW = 'accounts:new'
+export const TASK_ACCOUNTS_LIST = 'accounts:list'
+export const TASK_ACCOUNTS_UNLOCK_SIGNER = 'accounts:unlock'
+export const TASK_ACCOUNTS_UNLOCK_SIGNERS = 'accounts:unlock:signers'
+export const TASK_ACCOUNTS_UNLOCK_WALLET = 'accounts:unlock:wallet'
+export const TASK_ACCOUNTS_UNLOCK_WALLETS = 'accounts:unlock:wallets'
+export const TASK_ACCOUNTS_UNLOCK_PROVIDER = 'accounts:unlock:provider'
+
+task(TASK_ACCOUNTS, 'Manage local accounts')
   .addOptionalPositionalParam('action', 'Action to perform: list, import, delete')
+  .addOptionalParam('name', 'Name of the account')
+  .addOptionalParam('password', 'Password to encrypt the account')
   .setAction(async (taskArgs, hre) => {
     if (taskArgs.action === undefined) {
       console.log('No action specified')
@@ -24,7 +35,7 @@ task('accounts', 'Manage local accounts')
     }
   })
 
-subtask('accounts:new', 'Add a new account via mnemonic.')
+subtask(TASK_ACCOUNTS_NEW, 'Add a new account via mnemonic.')
   .addOptionalParam('name', 'Name of the account')
   .addOptionalParam('mnemonic', 'Mnemonic to derive the account from')
   .addOptionalParam('password', 'Password used to encrypt the account')
@@ -59,7 +70,7 @@ subtask('accounts:new', 'Add a new account via mnemonic.')
     console.log(`Saved account to ${fileName}`)
   })
 
-subtask('accounts:list', 'List local accounts').setAction(async (_, hre) => {
+subtask(TASK_ACCOUNTS_LIST, 'List local accounts').setAction(async (_, hre) => {
   const accounts = getSecureAccounts(hre.config.paths.accounts)
 
   console.log('Managed accounts:')
@@ -68,8 +79,32 @@ subtask('accounts:list', 'List local accounts').setAction(async (_, hre) => {
   }
 })
 
-subtask('accounts:unlock', 'Unlock account').setAction(async (_, hre) => {
-  const signer = await hre.accounts.getSigner()
-  console.log(`Account ${signer.address} unlocked`)
+subtask(TASK_ACCOUNTS_UNLOCK_SIGNER, 'Unlock account, returns a single signer').setAction(async (taskArgs, hre) => {
+  const signer = await hre.accounts.getSigner(taskArgs.name, taskArgs.password)
+  logDebug(`Account ${signer.address} unlocked!`)
   return signer
+})
+
+subtask(TASK_ACCOUNTS_UNLOCK_SIGNERS, 'Unlock account, returns multiple signers').setAction(async (taskArgs, hre) => {
+  const signers = await hre.accounts.getSigners(taskArgs.name, taskArgs.password)
+  logDebug(`Account unlocked, returning ${signers.length} signers!`)
+  return signers
+})
+
+subtask(TASK_ACCOUNTS_UNLOCK_WALLET, 'Unlock account, returns a single wallet').setAction(async (taskArgs, hre) => {
+  const wallet = await hre.accounts.getWallet(taskArgs.name, taskArgs.password)
+  logDebug(`Account ${wallet.address} unlocked!`)
+  return wallet
+})
+
+subtask(TASK_ACCOUNTS_UNLOCK_WALLETS, 'Unlock account, returns multiple wallets').setAction(async (taskArgs, hre) => {
+  const wallets = await hre.accounts.getWallets(taskArgs.name, taskArgs.password)
+  logDebug(`Account unlocked, returning ${wallets.length} wallets!`)
+  return wallets
+})
+
+subtask(TASK_ACCOUNTS_UNLOCK_PROVIDER, 'Unlock account, returns a provider').setAction(async (taskArgs, hre) => {
+  const provider = await hre.accounts.getProvider(taskArgs.name, taskArgs.password)
+  logDebug(`Account unlocked, returning provider!`)
+  return provider
 })

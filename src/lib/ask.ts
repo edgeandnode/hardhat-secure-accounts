@@ -5,7 +5,7 @@ import { logDebug } from '../helpers/logger'
 import { SecureAccountPluginError } from '../helpers/error'
 // import Prompt from 'prompt-sync'
 
-const isRepl = !!require('repl').repl
+export const isRepl = !!require('repl').repl
 
 export async function getAccountOrAsk(
   _name: string | undefined,

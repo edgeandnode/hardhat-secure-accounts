@@ -3,12 +3,13 @@ import path from 'path'
 
 import { extendConfig, extendEnvironment } from 'hardhat/config'
 import { lazyFunction } from 'hardhat/plugins'
-import { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
+import { HardhatConfig, HardhatUserConfig, Network } from 'hardhat/types'
 
 import { getWallet, getWallets } from './lib/wallet'
 import { getSigner, getSigners } from './lib/signer'
 import { getProvider } from './lib/provider'
 import { logDebug, logError } from './helpers/logger'
+import { isRepl } from './lib/ask'
 
 import './type-extensions'
 import './tasks'
@@ -32,7 +33,7 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
 })
 
 extendEnvironment((hre) => {
-  if (process.stdout.isTTY) {
+  if (isRepl) {
     logError('REPL environment not supported!')
   }
 
@@ -43,14 +44,14 @@ extendEnvironment((hre) => {
     getWallets: lazyFunction(() => (name?: string, password?: string) =>
       getWallets(hre.config.paths.accounts, name, password),
     ),
-    getSigner: lazyFunction(() => (name?: string, password?: string) =>
-      getSigner(hre.network, hre.config.paths.accounts, name, password),
+    getSigner: lazyFunction(() => (network?: Network, name?: string, password?: string) =>
+      getSigner(network ?? hre.network, hre.config.paths.accounts, name, password),
     ),
-    getSigners: lazyFunction(() => (name?: string, password?: string) =>
-      getSigners(hre.network, hre.config.paths.accounts, name, password),
+    getSigners: lazyFunction(() => (network?: Network, name?: string, password?: string) =>
+      getSigners(network ?? hre.network, hre.config.paths.accounts, name, password),
     ),
-    getProvider: lazyFunction((name?: string, password?: string) => () =>
-      getProvider(hre.network, hre.config.paths.accounts, name, password),
+    getProvider: lazyFunction((network?: Network, name?: string, password?: string) => () =>
+      getProvider(network ?? hre.network, hre.config.paths.accounts, name, password),
     ),
   }
 })
