@@ -6,18 +6,18 @@ This plugin provides a secure way of storing private keys to use with [Hardhat](
 __⚠️ Disclaimer ⚠️__: Exercise caution when using this plugin! For any serious production work you should use more reliable and safe ways of securing your keys/contracts such as hardware wallets, multisigs, ownable contracts, etc.
 
 **Why**
+
 A few reasons why you might want to use this plugin:
 - You don't want to store your private keys in plain text on an `.env` file or `secrets.json`
 - You don't want to update your keys when switching between accounts
 - You accidentally committed your private keys to a public repository and don't want it to happen again...
 
 **What**
+
 What this plugin can do for you:
 - Manage multiple accounts on your hardhat project using mnemonic phrases (TODO: support private keys!)
 - Create and access secure keystore files using [ethers](https://docs.ethers.io/v5/) to [encrypt](https://docs.ethers.io/v5/api/signer/#Wallet-encrypt) and [decrypt](https://docs.ethers.io/v5/api/signer/#Wallet-fromEncryptedJsonSync) the private keys. By default keystore files are stored at the root of your project in a `.keystore` folder, you should gitignore this folder as an extra security measure.
 - Unlock your accounts and get a wallet, signer or provider to use with your hardhat tasks/scripts/console.
-
----
 
 ## Installation
 
@@ -38,8 +38,6 @@ Or, if you are using TypeScript, add this to your hardhat.config.ts:
 ```
 import "hardhat-secure-accounts";
 ```
-
----
 
 ## Usage
 
@@ -107,9 +105,7 @@ console.log(`Account ${signer.address} unlocked!`)
 
 See [API reference](#api-reference) for a complete list of the available tasks.
 
----
-
-#### API reference
+## API reference
 
 | Task | CLI | Hardhat task | Hardhat environment extension | Description |
 | --- | --- | --- | --- | --- |
@@ -118,6 +114,7 @@ See [API reference](#api-reference) for a complete list of the available tasks.
 | Unlock signer  | `npx hardhat accounts unlock` | `TASK_ACCOUNTS_UNLOCK_SIGNER` | `await hre.accounts.getSigner()` | Returns the main signer from the mnemonic derivation path. Return type: `SignerWithAddress` |
 | Unlock signers | `npx hardhat accounts unlock:signers` | `TASK_ACCOUNTS_UNLOCK_SIGNERS` | `await hre.accounts.getSigners()` | Returns multiple signers (20) derived from the mnemonic. Return type: `SignerWithAddress[]` |
 | Unlock provider | `npx hardhat accounts unlock:provider` | `TASK_ACCOUNTS_UNLOCK_PROVIDER` | `await hre.accounts.getProvider()` | Returns a provider with pre-configured local accounts based on the mnemonic. Return type: `EthersProviderWrapper` |
+
 
 **Optional parameters**
 
@@ -143,8 +140,6 @@ Or using the CLI:
 # This will prompt the user only for the account password
 npx hardhat accounts unlock --name goerli-deployer
 ```
-
----
 
 ## Configuration
 
@@ -180,8 +175,6 @@ const config: HardhatUserConfig = {
 
 export default config
 ```
-
----
 
 ## TODO
 - [] Support private keys instead of mnemonic
