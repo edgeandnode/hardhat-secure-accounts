@@ -50,7 +50,7 @@ extendEnvironment((hre) => {
     getSigners: lazyFunction(() => (network?: Network, name?: string, password?: string) =>
       getSigners(network ?? hre.network, hre.config.paths.accounts, name, password),
     ),
-    getProvider: lazyFunction((network?: Network, name?: string, password?: string) => () =>
+    getProvider: lazyFunction(() => (network?: Network, name?: string, password?: string) =>
       getProvider(network ?? hre.network, hre.config.paths.accounts, name, password),
     ),
   }

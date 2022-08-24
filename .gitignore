@@ -63,4 +63,5 @@ typings/
 .env
 
 .accounts
+!test/fixture-projects/hardhat-project/.accounts
 cache
