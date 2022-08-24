@@ -41,8 +41,8 @@ subtask('accounts:new', 'Add a new account via mnemonic.')
     }
 
     // Get account mnemonic
-    const mnemonic = await getStringOrAsk('mnemonic', 'Enter mnemonic', taskArgs.mnemonic)
-    const wallet = hre.ethers.Wallet.fromMnemonic(mnemonic)
+    const mnemonic = await getStringOrAsk('mnemonic', 'Enter mnemonic (leave empty to create a random mnemonic)', taskArgs.mnemonic)
+    const wallet = mnemonic.length === 0 ? hre.ethers.Wallet.createRandom() : hre.ethers.Wallet.fromMnemonic(mnemonic)
 
     // Get account password and ecrypt wallet
     const password = await getPasswordOrAsk(taskArgs.password)
