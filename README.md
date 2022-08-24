@@ -187,4 +187,5 @@ export default config
 - [] Support private keys instead of mnemonic
 - [] Support repl environments such as `npx hardhat console`
 - [] Improve help messages
+- [] Improve tests
 
