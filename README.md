@@ -2,9 +2,6 @@
 
 This plugin provides a secure way of storing private keys to use with [Hardhat](https://hardhat.org/). The keys are encrypted using a user-provided password and stored using [keystore](https://julien-maffre.medium.com/what-is-an-ethereum-keystore-file-86c8c5917b97). The plugin also provides several ways of unlocking and using the accounts to sign transactions and messages.
 
-
-__⚠️ Disclaimer ⚠️__: Exercise caution when using this plugin! For any serious production work you should use more reliable and safe ways of securing your keys/contracts such as hardware wallets, multisigs, ownable contracts, etc.
-
 **Why**
 
 A few reasons why you might want to use this plugin:
@@ -18,6 +15,12 @@ What this plugin can do for you:
 - Manage multiple accounts on your hardhat project using mnemonic phrases (TODO: support private keys!)
 - Create and access secure keystore files using [ethers](https://docs.ethers.io/v5/) to [encrypt](https://docs.ethers.io/v5/api/signer/#Wallet-encrypt) and [decrypt](https://docs.ethers.io/v5/api/signer/#Wallet-fromEncryptedJsonSync) the private keys. By default keystore files are stored at the root of your project in a `.keystore` folder, you should gitignore this folder as an extra security measure.
 - Unlock your accounts and get a wallet, signer or provider to use with your hardhat tasks/scripts/console.
+
+## ⚠️ Disclaimers ⚠️ 
+
+- Exercise caution when using this plugin! For any serious production work you should use more reliable and safe ways of securing your keys/contracts such as hardware wallets, multisigs, ownable contracts, etc.
+
+- Because of how [repl](https://github.com/nodejs/repl) works it's not possible to use most of the popular prompt libraries while working on repl environments such as `hardhat console`. The plugin supports these environments via usage of [prompt-sync](https://www.npmjs.com/package/prompt-sync) which is a project that's not actively maintained (and it doesn't look as nice!). Please use with caution.
 
 ## Installation
 

@@ -33,10 +33,6 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
 })
 
 extendEnvironment((hre) => {
-  if (isRepl) {
-    logError('REPL environment not supported!')
-  }
-
   hre.accounts = {
     getWallet: lazyFunction(() => (name?: string, password?: string) =>
       getWallet(hre.config.paths.accounts, name, password),

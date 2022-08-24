@@ -1,11 +1,11 @@
 import Enquirer from 'enquirer'
+import Prompt from 'prompt-sync'
 
 import { getSecureAccount, getSecureAccounts, SecureAccount } from './account'
-import { logDebug } from '../helpers/logger'
+import { logDebug, logWarn } from '../helpers/logger'
 import { SecureAccountPluginError } from '../helpers/error'
-// import Prompt from 'prompt-sync'
 
-export const isRepl = !!require('repl').repl
+export const isRepl = () => !!require('repl').repl
 
 export async function getAccountOrAsk(
   _name: string | undefined,
@@ -64,23 +64,26 @@ async function askForAccount(accounts: SecureAccount[]): Promise<string> {
   let answer: string = ''
   const options = accounts.map((a) => a.name)
   logDebug(`Managed accounts: ${options.join(', ')}`)
+  
+  if (isRepl()) {
+    logWarn('REPL detected, using prompt-sync')
+    console.log('Available accounts: ', options.join(', '))
+    
+    // Function to autocomplete account names
+    function complete(commands: string[]) {
+      return function (str: string) {
+        let i
+        let ret = []
+        for (i=0; i< commands.length; i++) {
+          if (commands[i].indexOf(str) == 0)
+            ret.push(commands[i])
+        }
+        return ret
+      }
+    }
 
-  if (isRepl) {
-    // function complete(commands: string[]) {
-    //   return function (str: string) {
-    //     var i;
-    //     var ret = [];
-    //     for (i=0; i< commands.length; i++) {
-    //       if (commands[i].indexOf(str) == 0)
-    //         ret.push(commands[i]);
-    //     }
-    //     return ret;
-    //   };
-    // };
-    // const prompt = require('prompt-sync')({
-    //   autocomplete: complete(accounts.map(a => a.name))
-    // })
-    // answer = prompt(question)
+    const prompt = Prompt()
+    answer = prompt(`${question} (use tab to autocomplete): `, { autocomplete: complete(options) })
   } else {
     const response = await Enquirer.prompt<{ account: string}>({
       type: 'select',
@@ -98,10 +101,10 @@ async function askForPassword(): Promise<string> {
   const question = 'Enter the password for this account'
   let answer: string = ''
 
-  if (isRepl) {
-    // const PromptSync = (await import('prompt-sync')).default()
-    // var n = PromptSync('How many more times? ')
-    // console.log(n)
+  if (isRepl()) {
+    logWarn('REPL detected, using prompt-sync')
+    const prompt = Prompt()
+    answer = prompt(`${question}: `, { echo: '*' })
   } else {
     const response = await Enquirer.prompt<{ password: string }>({
       type: 'password',
@@ -117,10 +120,10 @@ async function askForPassword(): Promise<string> {
 async function askForString(question: string): Promise<string> {
   let answer: string = ''
 
-  if (isRepl) {
-    // const PromptSync = (await import('prompt-sync')).default()
-    // var n = PromptSync('How many more times? ')
-    // console.log(n)
+  if (isRepl()) {
+    logWarn('REPL detected, using prompt-sync')
+    const prompt = Prompt()
+    answer = prompt(`${question}: `)
   } else {
     const response = await Enquirer.prompt<{ name: string }>({
       type: 'input',
