@@ -8,6 +8,10 @@ export interface SecureAccount {
 }
 
 export function getSecureAccounts(rootDir: string): SecureAccount[] {
+  if (!fs.existsSync(rootDir)) {
+    return []
+  }
+
   return fs.readdirSync(rootDir).map((a) => ({
     name: path.parse(a).name,
     filename: path.join(rootDir, a),
