@@ -20,7 +20,7 @@ What this plugin can do for you:
 
 - Exercise caution when using this plugin! For any serious production work you should use more reliable and safe ways of securing your keys/contracts such as hardware wallets, multisigs, ownable contracts, etc.
 
-- Because of how [repl](https://github.com/nodejs/repl) works it's not possible to use most of the popular prompt libraries while working on repl environments such as `hardhat console`. The plugin supports these environments via usage of [prompt-sync](https://www.npmjs.com/package/prompt-sync) which is a project that's not actively maintained (and it doesn't look as nice!). Please use with caution.
+- Because of how [repl](https://github.com/nodejs/repl) works it's not possible to use most of the popular prompt libraries while working on repl environments such as `npx hardhat console`. The plugin supports these environments via usage of [prompt-sync](https://www.npmjs.com/package/prompt-sync) which is a project that's not actively maintained (and it doesn't look as nice!). Please use with caution.
 
 ## Installation
 
@@ -181,7 +181,6 @@ export default config
 
 ## TODO
 - [] Support private keys instead of mnemonic
-- [] Support repl environments such as `npx hardhat console`
 - [] Improve help messages
 - [] Improve tests
 
