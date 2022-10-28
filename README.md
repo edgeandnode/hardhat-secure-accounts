@@ -49,10 +49,20 @@ import "hardhat-secure-accounts";
 To add an account to your project, run the following command:
 
 ```bash
-npx hardhat accounts new
+npx hardhat accounts add
 ```
 
 You'll be prompted for an account name, mnemonic and password and the account will be stored under the `.keystore` folder (unless you specify a different path via plugin configuration).
+
+#### Removing an account
+
+To remove an account from your project, run the following command:
+
+```bash
+npx hardhat accounts remove
+```
+
+You'll be prompted for an account nameand the account will be deleted.
 
 #### Listing managed accounts
 

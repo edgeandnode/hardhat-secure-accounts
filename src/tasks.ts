@@ -5,11 +5,12 @@ import { task, subtask } from 'hardhat/config'
 
 import { getSecureAccounts } from './lib/account'
 import { logDebug } from './helpers/logger'
-import { getPasswordOrAsk, getStringOrAsk } from './lib/ask'
+import { askForConfirmation, getAccountOrAsk, getPasswordOrAsk, getStringOrAsk } from './lib/ask'
 import { SecureAccountPluginError } from './helpers/error'
 
 export const TASK_ACCOUNTS = 'accounts'
-export const TASK_ACCOUNTS_NEW = 'accounts:new'
+export const TASK_ACCOUNTS_ADD = 'accounts:add'
+export const TASK_ACCOUNTS_REMOVE = 'accounts:remove'
 export const TASK_ACCOUNTS_LIST = 'accounts:list'
 export const TASK_ACCOUNTS_UNLOCK_SIGNER = 'accounts:unlock'
 export const TASK_ACCOUNTS_UNLOCK_SIGNERS = 'accounts:unlock:signers'
@@ -18,24 +19,21 @@ export const TASK_ACCOUNTS_UNLOCK_WALLETS = 'accounts:unlock:wallets'
 export const TASK_ACCOUNTS_UNLOCK_PROVIDER = 'accounts:unlock:provider'
 
 task(TASK_ACCOUNTS, 'Manage local accounts')
-  .addOptionalPositionalParam('action', 'Action to perform: list, new, delete')
+  .addOptionalPositionalParam('action', 'Action to perform: list, add, remove')
   .addOptionalParam('name', 'Name of the account')
   .addOptionalParam('password', 'Password to encrypt the account')
   .setAction(async (taskArgs, hre) => {
-    if (taskArgs.action === undefined) {
-      console.log('No action specified')
-      return
-    }
+    const action = taskArgs.action ? `accounts:${taskArgs.action}` : TASK_ACCOUNTS_LIST
 
     try {
-      logDebug(`Running action ${taskArgs.action}`)
-      await hre.run(`accounts:${taskArgs.action}`, taskArgs)
+      logDebug(`Running action ${action}`)
+      await hre.run(action, taskArgs)
     } catch (error) {
-      console.log(error)
+      throw new SecureAccountPluginError('Action not supported. Run `npx hardhat accounts --help` for more info')
     }
   })
 
-subtask(TASK_ACCOUNTS_NEW, 'Add a new account via mnemonic.')
+subtask(TASK_ACCOUNTS_ADD, 'Add a new account via mnemonic.')
   .addOptionalParam('name', 'Name of the account')
   .addOptionalParam('mnemonic', 'Mnemonic to derive the account from')
   .addOptionalParam('password', 'Password used to encrypt the account')
@@ -70,6 +68,18 @@ subtask(TASK_ACCOUNTS_NEW, 'Add a new account via mnemonic.')
     console.log(`Saved account to ${fileName}`)
   })
 
+subtask(TASK_ACCOUNTS_REMOVE, 'Remove an existing account').setAction(async (taskArgs, hre) => {
+  const account = await getAccountOrAsk(taskArgs.name, hre.config.paths.accounts)
+  logDebug(`Attempting to delete ${account.name}...`)
+
+ const deleteAccount = await askForConfirmation(`Are you sure you want to delete ${account.name}?`)
+
+ if (deleteAccount) {
+    fs.unlinkSync(account.filename)
+    console.log(`Deleted account ${account.name} from ${account.filename}`)
+ }
+})
+
 subtask(TASK_ACCOUNTS_LIST, 'List local accounts').setAction(async (_, hre) => {
   const accounts = getSecureAccounts(hre.config.paths.accounts)
 
@@ -80,13 +90,13 @@ subtask(TASK_ACCOUNTS_LIST, 'List local accounts').setAction(async (_, hre) => {
 })
 
 subtask(TASK_ACCOUNTS_UNLOCK_SIGNER, 'Unlock account, returns a single signer').setAction(async (taskArgs, hre) => {
-  const signer = await hre.accounts.getSigner(taskArgs.name, taskArgs.password)
+  const signer = await hre.accounts.getSigner(hre.network, taskArgs.name, taskArgs.password)
   logDebug(`Account ${signer.address} unlocked!`)
   return signer
 })
 
 subtask(TASK_ACCOUNTS_UNLOCK_SIGNERS, 'Unlock account, returns multiple signers').setAction(async (taskArgs, hre) => {
-  const signers = await hre.accounts.getSigners(taskArgs.name, taskArgs.password)
+  const signers = await hre.accounts.getSigners(hre.network, taskArgs.name, taskArgs.password)
   logDebug(`Account unlocked, returning ${signers.length} signers!`)
   return signers
 })
@@ -104,7 +114,7 @@ subtask(TASK_ACCOUNTS_UNLOCK_WALLETS, 'Unlock account, returns multiple wallets'
 })
 
 subtask(TASK_ACCOUNTS_UNLOCK_PROVIDER, 'Unlock account, returns a provider').setAction(async (taskArgs, hre) => {
-  const provider = await hre.accounts.getProvider(taskArgs.name, taskArgs.password)
+  const provider = await hre.accounts.getProvider(hre.network, taskArgs.name, taskArgs.password)
   logDebug(`Account unlocked, returning provider!`)
   return provider
 })

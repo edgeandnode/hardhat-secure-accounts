@@ -10,6 +10,8 @@ export async function getSigner(
   name?: string,
   password?: string,
 ): Promise<SignerWithAddress> {
+  console.log(name);
+  
   const provider = await getProvider(network, accountsDir, name, password)
 
   const signer = provider.getSigner()
