@@ -30,3 +30,9 @@ export const TEST_SIGNED_MESSAGE = '0x6086b97f59a07520ea9df5e069c4b6a9bcb6046912
 // Mnemonic to set on hardhat network
 export const HARDHAT_MNEMONIC =
   'dust pass blood gate carry daughter claim income similar capable east salad'
+
+export const HARDHAT_PRIVATE_KEYS = [
+  '0x70cc4d7e39e1adc999a3397231f7b710f13e0d6e0888e700d1075ffa7f60da5c',
+  '0x172c812fe8e8a1fdc205ec196c4fe536ba75f4061cb969b1308adc67c642bb25',
+  '0xea57407c4471585357d6030a72597b0a63b1511882ecfe9cf6c29a467ca79649'
+]
