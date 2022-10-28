@@ -64,19 +64,18 @@ async function askForAccount(accounts: SecureAccount[]): Promise<string> {
   let answer: string = ''
   const options = accounts.map((a) => a.name)
   logDebug(`Managed accounts: ${options.join(', ')}`)
-  
+
   if (isRepl()) {
     logWarn('REPL detected, using prompt-sync')
     console.log('Available accounts: ', options.join(', '))
-    
+
     // Function to autocomplete account names
     function complete(commands: string[]) {
       return function (str: string) {
         let i
         let ret = []
-        for (i=0; i< commands.length; i++) {
-          if (commands[i].indexOf(str) == 0)
-            ret.push(commands[i])
+        for (i = 0; i < commands.length; i++) {
+          if (commands[i].indexOf(str) == 0) ret.push(commands[i])
         }
         return ret
       }
@@ -85,7 +84,7 @@ async function askForAccount(accounts: SecureAccount[]): Promise<string> {
     const prompt = Prompt()
     answer = prompt(`${question} (use tab to autocomplete): `, { autocomplete: complete(options) })
   } else {
-    const response = await Enquirer.prompt<{ account: string}>({
+    const response = await Enquirer.prompt<{ account: string }>({
       type: 'select',
       name: 'account',
       message: question,
@@ -131,6 +130,26 @@ async function askForString(question: string): Promise<string> {
       message: question,
     })
     answer = response.name
+  }
+
+  return answer
+}
+
+export async function askForConfirmation(question: string): Promise<boolean> {
+  let answer: boolean = false
+
+  if (isRepl()) {
+    logWarn('REPL detected, using prompt-sync')
+    const prompt = Prompt()
+    const response = prompt(`${question} (y/N): `)
+    answer = ['y', 'Y'].includes(response)
+  } else {
+    const response = await Enquirer.prompt<{ yes: boolean }>({
+      type: 'confirm',
+      name: 'yes',
+      message: question,
+    })
+    answer = response.yes
   }
 
   return answer
