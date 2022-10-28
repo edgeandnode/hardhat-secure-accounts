@@ -18,7 +18,7 @@ export const TASK_ACCOUNTS_UNLOCK_WALLETS = 'accounts:unlock:wallets'
 export const TASK_ACCOUNTS_UNLOCK_PROVIDER = 'accounts:unlock:provider'
 
 task(TASK_ACCOUNTS, 'Manage local accounts')
-  .addOptionalPositionalParam('action', 'Action to perform: list, import, delete')
+  .addOptionalPositionalParam('action', 'Action to perform: list, new, delete')
   .addOptionalParam('name', 'Name of the account')
   .addOptionalParam('password', 'Password to encrypt the account')
   .setAction(async (taskArgs, hre) => {
