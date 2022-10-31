@@ -37,10 +37,10 @@ function createProviderWrapper(network: Network) {
 
 function setNetworkMnemonic(_network: Network, mnemonic: Mnemonic): Network {
   logDebug(`Cloning network config for ${_network.name} provider`)
-  const network = cloneDeep(_network)
+  const networkConfig = cloneDeep(_network.config)
 
-  logDebug(`Injecting mnemonic into network config for ${network.name}`)
-  let networkAccounts = network.config.accounts
+  logDebug(`Injecting mnemonic into network config for ${_network.name}`)
+  let networkAccounts = networkConfig.accounts
 
   if (
     isHardhatNetworkHDAccountsConfig(networkAccounts) ||
@@ -51,7 +51,7 @@ function setNetworkMnemonic(_network: Network, mnemonic: Mnemonic): Network {
     networkAccounts.path = removeIndexFromHDPath(mnemonic.path)
   } else {
     logDebug('Target network not using HD accounts, setting mnemonic')
-    network.config.accounts = {
+    networkConfig.accounts = {
       mnemonic: mnemonic.phrase,
       initialIndex: DEFAULT_HD_INITIAL_INDEX,
       count: DEFAULT_HD_COUNT,
@@ -59,7 +59,9 @@ function setNetworkMnemonic(_network: Network, mnemonic: Mnemonic): Network {
       passphrase: DEFAULT_HD_PASSPHRASE,
     }
   }
-  return network
+
+  _network.config = networkConfig
+  return _network
 }
 
 // Type guards
