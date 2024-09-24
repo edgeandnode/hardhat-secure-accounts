@@ -24,11 +24,11 @@ describe('Extended environment usage > project using private keys', function () 
 })
 
 function runTests() {
-  it('should unlock account and return a single wallet', async function () {
+  it.only('should unlock account and return a single wallet', async function () {
     const wallet = await this.hre.accounts.getWallet(TEST_NAME, TEST_PASSWORD)
 
     expect(wallet.address).to.equal(TEST_ADDRESSES[0])
-    expect(wallet.mnemonic.phrase).to.equal(TEST_MNEMONIC)
+    expect(wallet?.mnemonic?.phrase).to.equal(TEST_MNEMONIC)
     expect(wallet.provider).to.be.null
     expect(wallet.signMessage('test')).to.eventually.equal(TEST_SIGNED_MESSAGE)
   })

@@ -1,6 +1,6 @@
 import "hardhat/types/config";
 import "hardhat/types/runtime";
-import { Wallet } from 'ethers'
+import { HDNodeWallet } from 'ethers'
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { EthersProviderWrapper } from "@nomiclabs/hardhat-ethers/internal/ethers-provider-wrapper";
 import { Network } from "hardhat/types/runtime";
@@ -16,8 +16,8 @@ declare module "hardhat/types/config" {
 }
 
 export interface AccountsRuntimeEnvironment {
-  getWallet(name?: string, password?: string): Promise<Wallet>
-  getWallets(name?: string, password?: string): Promise<Wallet[]>
+  getWallet(name?: string, password?: string): Promise<HDNodeWallet>
+  getWallets(name?: string, password?: string): Promise<HDNodeWallet[]>
   getSigner(network?: Network, name?: string, password?: string): Promise<SignerWithAddress>
   getSigners(network?: Network, name?: string, password?: string): Promise<SignerWithAddress[]>
   getProvider(network?: Network, name?: string, password?: string): Promise<EthersProviderWrapper>

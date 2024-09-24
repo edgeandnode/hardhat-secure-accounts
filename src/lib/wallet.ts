@@ -1,4 +1,4 @@
-import { Wallet } from 'ethers'
+import { HDNodeWallet, Wallet } from 'ethers'
 import { derivePrivateKeys } from 'hardhat/internal/core/providers/util'
 
 import { SecureAccountPluginError } from '../helpers/error'
@@ -13,7 +13,7 @@ export async function getWallet(
   accountsDir: string,
   name?: string,
   _password?: string,
-): Promise<Wallet> {
+): Promise<HDNodeWallet> {
   const account = await getAccountOrAsk(name, accountsDir)
   const password = await getPasswordOrAsk(_password)
 
@@ -21,7 +21,11 @@ export async function getWallet(
     const wallet = await Wallet.fromEncryptedJson(account.json, password)
     logDebug(`Account unlocked: ${wallet.address}`)
 
-    return wallet
+    if (isHDNodeWallet(wallet)) {
+      return wallet
+    } else {
+      throw new SecureAccountPluginError('Wallet is not an HDNodeWallet')
+    }
   } catch (error) {
     throw new SecureAccountPluginError(error as Error)
   }
@@ -31,26 +35,25 @@ export async function getWallets(
   accountsDir: string,
   name?: string,
   password?: string,
-): Promise<Wallet[]> {
+): Promise<HDNodeWallet[]> {
   const wallet = await getWallet(accountsDir, name, password)
 
-  logDebug(`Deriving private keys from mnemonic`)
-  const privateKeys = derivePrivateKeys(
-    wallet.mnemonic.phrase,
-    removeIndexFromHDPath(wallet.mnemonic.path),
-    DEFAULT_HD_INITIAL_INDEX,
-    DEFAULT_HD_COUNT,
-    DEFAULT_HD_PASSPHRASE,
-  )
+  if (wallet.mnemonic === null) {
+    throw new SecureAccountPluginError('Wallet is not an HDNodeWallet')
+  }
 
-  return privateKeys.map((privateKey) => new Wallet(privateKey))
+  logDebug(`Deriving private keys from mnemonic`)
+  return Array.from(Array(DEFAULT_HD_COUNT).keys()).map((i) => wallet.deriveChild(i))
 }
 
-
-export function removeIndexFromHDPath (hdpath: string): string {
+export function removeIndexFromHDPath(hdpath: string): string {
   if (hdpath.endsWith('/')) {
     return hdpath
   } else {
     return hdpath.substring(0, hdpath.lastIndexOf('/') + 1)
   }
+}
+
+function isHDNodeWallet(wallet: Wallet | HDNodeWallet): wallet is HDNodeWallet {
+  return (wallet as HDNodeWallet).mnemonic !== undefined
 }
