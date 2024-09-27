@@ -8,7 +8,7 @@ const config: HardhatUserConfig = {
   solidity: '0.7.3',
   defaultNetwork: 'hardhat',
   paths: {
-    accounts: '.accounts',
+    secureAccounts: '.accounts',
   },
   networks: {
     hardhat: {

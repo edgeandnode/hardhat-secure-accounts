@@ -1,6 +1,6 @@
 {
   "name": "hardhat-secure-accounts",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "Account management plugin for Hardhat",
   "repository": "github:edgeandnode/hardhat-secure-accounts",
   "author": "Edge & Node",
@@ -32,7 +32,6 @@
   ],
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.1.1",
     "@types/chai": "^4.1.7",
     "@types/chai-as-promised": "^7.1.5",
     "@types/debug": "^4.1.7",
@@ -51,10 +50,10 @@
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^4.0.3"
+    "typescript": "^5.6.2"
   },
   "peerDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.1.1",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "ethers": "^6.13.0",
     "hardhat": "^2.22.0"
   },

@@ -1,9 +1,9 @@
 import Enquirer from 'enquirer'
 import Prompt from 'prompt-sync'
 
-import { getSecureAccount, getSecureAccounts, SecureAccount } from './account'
-import { logDebug, logWarn } from '../helpers/logger'
-import { SecureAccountPluginError } from '../helpers/error'
+import { getSecureAccount, getSecureAccounts, SecureAccount } from '../lib/account'
+import { logDebug, logWarn } from './logger'
+import { SecureAccountsPluginError } from './error'
 
 export const isRepl = () => !!require('repl').repl
 
@@ -22,7 +22,7 @@ export async function getAccountOrAsk(
 
   const account = getSecureAccount(accountsDir, name)
   if (account === undefined) {
-    throw new SecureAccountPluginError('Account not found!')
+    throw new SecureAccountsPluginError('Account not found!')
   }
   logDebug(`Found account ${account.name} at ${account.filename}`)
 
@@ -39,7 +39,7 @@ export async function getPasswordOrAsk(_password: string | undefined): Promise<s
   const password = _password ?? (await askForPassword())
 
   if (password === undefined) {
-    throw new SecureAccountPluginError('Password not provided!')
+    throw new SecureAccountsPluginError('Password not provided!')
   }
 
   return password

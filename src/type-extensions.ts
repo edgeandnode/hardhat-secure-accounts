@@ -1,30 +1,57 @@
-import "hardhat/types/config";
-import "hardhat/types/runtime";
-import { HDNodeWallet } from 'ethers'
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { EthersProviderWrapper } from "@nomiclabs/hardhat-ethers/internal/ethers-provider-wrapper";
-import { Network } from "hardhat/types/runtime";
+import 'hardhat/types/config'
+import 'hardhat/types/runtime'
 
-declare module "hardhat/types/config" {
-  export interface ProjectPathsUserConfig {
-    accounts?: string;
+import type { HDNodeWallet } from 'ethers'
+import type { SecureAccountsProvider } from './lib/provider'
+
+interface SecureAccountsOptions {
+  enabled?: boolean
+  defaultAccount?: string
+  defaultAccountPassword?: string
+}
+
+declare module 'hardhat/types/config' {
+  interface ProjectPathsConfig {
+    secureAccounts: string
   }
 
-  export interface ProjectPathsConfig {
-    accounts: string;
+  interface ProjectPathsUserConfig {
+    secureAccounts?: string
+  }
+
+  interface HardhatConfig {
+    secureAccounts?: SecureAccountsOptions
+  }
+
+  interface HardhatUserConfig {
+    secureAccounts?: SecureAccountsOptions
+  }
+
+  interface HardhatNetworkUserConfig {
+    secureAccounts?: SecureAccountsOptions
+  }
+
+  interface HardhatNetworkConfig {
+    secureAccounts?: SecureAccountsOptions
+  }
+
+  interface HttpNetworkUserConfig {
+    secureAccounts?: SecureAccountsOptions
+  }
+
+  interface HttpNetworkConfig {
+    secureAccounts?: SecureAccountsOptions
   }
 }
 
-export interface AccountsRuntimeEnvironment {
-  getWallet(name?: string, password?: string): Promise<HDNodeWallet>
-  getWallets(name?: string, password?: string): Promise<HDNodeWallet[]>
-  getSigner(network?: Network, name?: string, password?: string): Promise<SignerWithAddress>
-  getSigners(network?: Network, name?: string, password?: string): Promise<SignerWithAddress[]>
-  getProvider(network?: Network, name?: string, password?: string): Promise<EthersProviderWrapper>
+interface SecureAccountsRuntimeEnvironment {
+  provider: () => Promise<SecureAccountsProvider>
+  getSigner(name?: string, password?: string): Promise<HDNodeWallet>
+  getSigners(name?: string, password?: string): Promise<HDNodeWallet[]>
 }
 
-declare module "hardhat/types/runtime" {
-  export interface HardhatRuntimeEnvironment {
-    accounts: AccountsRuntimeEnvironment
+declare module 'hardhat/types/runtime' {
+  interface HardhatRuntimeEnvironment {
+    accounts: SecureAccountsRuntimeEnvironment
   }
 }
