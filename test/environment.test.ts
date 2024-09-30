@@ -1,7 +1,7 @@
 import chai, { expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { useEnvironment } from './helpers'
-import { getAddress } from 'ethers'
+import { ethers, getAddress, Wallet } from 'ethers'
 
 import {
   TEST_MNEMONIC,
@@ -10,6 +10,7 @@ import {
   TEST_PASSWORD,
   TEST_SIGNED_MESSAGE,
   HARDHAT_ADDRESSES,
+  TEST_PRIVATE_KEYS,
 } from './mnemonics'
 
 chai.use(chaiAsPromised)
@@ -39,7 +40,29 @@ describe('Extended environment usage > project using Secure Accounts', function 
     }
   })
 
-  it('should have signing keys for secured accounts', async function () {})
+  it('should have signing keys for secured accounts', async function () {
+    const accounts = (await this.hre.network.provider.request({
+      method: 'eth_accounts',
+    })) as string[]
+
+    for (let i = 0; i < accounts.length; i++) {
+      expect(getAddress(accounts[i])).to.equal(TEST_ADDRESSES[i])
+    }
+
+    const message = "Hello, this is a message to sign";
+    const messageHex = ethers.hexlify(ethers.toUtf8Bytes(message));
+
+    for (let i = 0; i < accounts.length; i++) {
+      const signature = await this.hre.network.provider.request({
+        method: 'eth_sign',
+        params: [accounts[i], messageHex],
+      }) as string
+
+      const wallet = new Wallet(TEST_PRIVATE_KEYS[i])
+      const walletSignature = await wallet.signMessage(message)
+      expect(signature).to.equal(walletSignature)
+    }
+  })
 
   it('should unlock account and return a single wallet', async function () {
     const wallet = await this.hre.accounts.getSigner(TEST_NAME, TEST_PASSWORD)
