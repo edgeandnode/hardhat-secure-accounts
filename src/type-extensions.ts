@@ -2,7 +2,7 @@ import 'hardhat/types/config'
 import 'hardhat/types/runtime'
 
 import type { HDNodeWallet } from 'ethers'
-import type { SecureAccountsProvider } from './lib/provider'
+import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider'
 
 interface SecureAccountsOptions {
   enabled?: boolean
@@ -45,7 +45,7 @@ declare module 'hardhat/types/config' {
 }
 
 interface SecureAccountsRuntimeEnvironment {
-  provider: () => Promise<SecureAccountsProvider>
+  provider: HardhatEthersProvider
   getSigner(name?: string, password?: string): Promise<HDNodeWallet>
   getSigners(name?: string, password?: string): Promise<HDNodeWallet[]>
 }

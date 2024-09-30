@@ -6,11 +6,13 @@ import { lazyObject } from 'hardhat/plugins'
 import { getSigner, getSigners } from './lib/signer'
 import { logDebug } from './helpers/logger'
 
-import type { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
+import type { HardhatEthersProvider as HardhatEthersProviderT } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider'
 import type { SecureAccountsProvider as SecureAccountsProviderT } from './lib/provider'
+import type { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
 
 import './type-extensions'
 import './tasks'
+import { Wallet } from 'ethers'
 
 extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
   const userPath = userConfig.paths?.secureAccounts
@@ -32,24 +34,20 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
 
 extendEnvironment((hre) => {
   hre.accounts = lazyObject(() => {
-    const { SecureAccountsProvider } = require('./lib/provider') as {
-      SecureAccountsProvider: typeof SecureAccountsProviderT
+    const {
+      HardhatEthersProvider,
+    } = require('@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider') as {
+      HardhatEthersProvider: typeof HardhatEthersProviderT
     }
-    const defaultAccount = hre.config.networks[hre.network.name].secureAccounts?.defaultAccount
-    const defaultAccountPassword = hre.config.networks[hre.network.name].secureAccounts?.defaultAccountPassword
+
+    const provider = new HardhatEthersProvider(hre.network.provider, hre.network.name)
 
     return {
-      provider: () =>
-        SecureAccountsProvider.create(
-          hre.network.provider,
-          hre.config.paths.secureAccounts,
-          defaultAccount,
-          defaultAccountPassword
-        ),
+      provider: provider,
       getSigner: (accountName?: string, accountPassword?: string) =>
-        getSigner(hre.config.paths.secureAccounts, accountName, accountPassword),
+        getSigner(hre.config.paths.secureAccounts, provider, accountName, accountPassword),
       getSigners: (accountName?: string, accountPassword?: string) =>
-        getSigners(hre.config.paths.secureAccounts, accountName, accountPassword),
+        getSigners(hre.config.paths.secureAccounts, provider, accountName, accountPassword),
     }
   })
 })
@@ -66,7 +64,7 @@ extendProvider(async (provider, config, network) => {
       provider,
       config.paths.secureAccounts,
       defaultAccount,
-      defaultAccountPassword
+      defaultAccountPassword,
     )
   }
 

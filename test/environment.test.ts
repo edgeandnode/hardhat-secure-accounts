@@ -46,7 +46,7 @@ describe('Extended environment usage > project using Secure Accounts', function 
 
     expect(wallet.address).to.equal(TEST_ADDRESSES[0])
     expect(wallet?.mnemonic?.phrase).to.equal(TEST_MNEMONIC)
-    expect(wallet.provider).to.be.null
+    expect(wallet.provider).not.to.be.null
     expect(wallet.signMessage('test')).to.eventually.equal(TEST_SIGNED_MESSAGE)
   })
 
@@ -58,7 +58,7 @@ describe('Extended environment usage > project using Secure Accounts', function 
     for (let i = 0; i < 20; i++) {
       expect(wallets[i].address).to.equal(TEST_ADDRESSES[i])
       expect(wallets[i].mnemonic?.phrase).to.equal(TEST_MNEMONIC)
-      expect(wallets[i].provider).to.be.null
+      expect(wallets[i].provider).not.to.be.null
       expect(wallets[i].signMessage('test')).to.eventually.be.fulfilled
     }
   })
