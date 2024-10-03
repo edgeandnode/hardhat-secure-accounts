@@ -12,7 +12,7 @@ import type { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
 
 import './type-extensions'
 import './tasks'
-import { Wallet } from 'ethers'
+import { getSecureAccounts } from './lib/account'
 
 extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
   const userPath = userConfig.paths?.secureAccounts
@@ -54,18 +54,25 @@ extendEnvironment((hre) => {
 
 extendProvider(async (provider, config, network) => {
   if (config.networks[network].secureAccounts) {
-    const { SecureAccountsProvider } = require('./lib/provider') as {
-      SecureAccountsProvider: typeof SecureAccountsProviderT
-    }
-    const defaultAccount = config.networks[network].secureAccounts?.defaultAccount
-    const defaultAccountPassword = config.networks[network].secureAccounts?.defaultAccountPassword
+    const secureAccounts = getSecureAccounts(config.paths.secureAccounts)
 
-    return await SecureAccountsProvider.create(
-      provider,
-      config.paths.secureAccounts,
-      defaultAccount,
-      defaultAccountPassword,
-    )
+    if (secureAccounts.length !== 0) {
+      logDebug('Creating SecureAccounts provider')
+      const { SecureAccountsProvider } = require('./lib/provider') as {
+        SecureAccountsProvider: typeof SecureAccountsProviderT
+      }
+      const defaultAccount = config.networks[network].secureAccounts?.defaultAccount
+      const defaultAccountPassword = config.networks[network].secureAccounts?.defaultAccountPassword
+
+      return await SecureAccountsProvider.create(
+        provider,
+        config.paths.secureAccounts,
+        defaultAccount,
+        defaultAccountPassword,
+      )
+    } else {
+      logDebug('No accounts found, using default provider')
+    }
   }
 
   return provider

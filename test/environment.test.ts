@@ -86,3 +86,20 @@ describe('Extended environment usage > project using Secure Accounts', function 
     }
   })
 })
+
+describe('Extended environment usage > project using Secure Accounts without accounts', function () {
+  useEnvironment('hardhat-project-no-accounts', 'hardhat')
+
+  it('should manage its own accounts', async function () {
+    const accounts = (await this.hre.network.provider.request({
+      method: 'eth_accounts',
+    })) as string[]
+    for (let i = 0; i < accounts.length; i++) {
+      expect(getAddress(accounts[i])).to.equal(HARDHAT_ADDRESSES[i])
+    }
+  })
+
+  it('should throw error when getting signers', async function () {
+    await expect(this.hre.accounts.getSigners()).to.be.rejectedWith('No accounts found!')
+  })
+})

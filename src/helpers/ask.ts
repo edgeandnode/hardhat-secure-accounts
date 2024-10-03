@@ -60,6 +60,10 @@ export async function getStringOrAsk(
 }
 
 async function askForAccount(accounts: SecureAccount[]): Promise<string> {
+  if (accounts.length === 0) {
+    throw new SecureAccountsPluginError('No accounts found!')
+  }
+
   const question = 'Choose an account to unlock'
   let answer: string = ''
   const options = accounts.map((a) => a.name)
