@@ -93,6 +93,21 @@ The plugin extends Hardhat's default provider (`hre.network.provider`), decorati
 
 Note that the provider is not extended by default. See [Configuration](#configuration) for instructions on how to enable it. Additionally, the provider will only be extended if there are accounts available in the project (which need to be created via the add command: `npx hardhat accounts add`).
 
+Any accounts defined using Hardhat's `accounts` field in the configuration file will be ignored by the plugin:
+
+```ts
+...
+    hardhat: {
+      secureAccounts: {
+        enabled: true,
+      },
+      accounts: {
+        mnemonic: 'myth like bonus scare over problem client lizard pioneer submit female collect', // ignored
+      },
+    },
+...
+```
+
 **Hardhat environment extension (recommended)**
 
 The plugin extends hardhat's environment with several convenience methods to unlock accounts. You can use these methods to get a signer or a provider instance to use with your scripts and tasks:
