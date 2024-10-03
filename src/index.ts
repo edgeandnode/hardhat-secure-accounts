@@ -53,7 +53,7 @@ extendEnvironment((hre) => {
 })
 
 extendProvider(async (provider, config, network) => {
-  if (config.networks[network].secureAccounts) {
+  if (config.networks[network].secureAccounts?.enabled || config.secureAccounts?.enabled) {
     const secureAccounts = getSecureAccounts(config.paths.secureAccounts)
 
     if (secureAccounts.length !== 0) {

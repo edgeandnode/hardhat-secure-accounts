@@ -13,7 +13,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       secureAccounts: {
-        enabled: false,
+        enabled: true,
         defaultAccount: TEST_NAME,
         defaultAccountPassword: TEST_PASSWORD
       },
