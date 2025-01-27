@@ -1,21 +1,21 @@
-import '@nomiclabs/hardhat-ethers'
+import '@nomicfoundation/hardhat-ethers'
 import path from 'path'
 
-import { extendConfig, extendEnvironment } from 'hardhat/config'
-import { lazyFunction } from 'hardhat/plugins'
-import { HardhatConfig, HardhatUserConfig, Network } from 'hardhat/types'
-
-import { getWallet, getWallets } from './lib/wallet'
+import { extendConfig, extendEnvironment, extendProvider } from 'hardhat/config'
+import { lazyObject } from 'hardhat/plugins'
 import { getSigner, getSigners } from './lib/signer'
-import { getProvider } from './lib/provider'
-import { logDebug, logError } from './helpers/logger'
-import { isRepl } from './lib/ask'
+import { logDebug } from './helpers/logger'
+
+import type { HardhatEthersProvider as HardhatEthersProviderT } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider'
+import type { SecureAccountsProvider as SecureAccountsProviderT } from './lib/provider'
+import type { HardhatConfig, HardhatUserConfig } from 'hardhat/types'
 
 import './type-extensions'
 import './tasks'
+import { getSecureAccounts } from './lib/account'
 
 extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
-  const userPath = userConfig.paths?.accounts
+  const userPath = userConfig.paths?.secureAccounts
 
   let accounts: string
   if (userPath === undefined) {
@@ -29,25 +29,51 @@ extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) =>
   }
 
   logDebug(`Using accounts directory: ${accounts}`)
-  config.paths.accounts = accounts
+  config.paths.secureAccounts = accounts
 })
 
 extendEnvironment((hre) => {
-  hre.accounts = {
-    getWallet: lazyFunction(() => (name?: string, password?: string) =>
-      getWallet(hre.config.paths.accounts, name, password),
-    ),
-    getWallets: lazyFunction(() => (name?: string, password?: string) =>
-      getWallets(hre.config.paths.accounts, name, password),
-    ),
-    getSigner: lazyFunction(() => (network?: Network, name?: string, password?: string) =>
-      getSigner(network ?? hre.network, hre.config.paths.accounts, name, password),
-    ),
-    getSigners: lazyFunction(() => (network?: Network, name?: string, password?: string) =>
-      getSigners(network ?? hre.network, hre.config.paths.accounts, name, password),
-    ),
-    getProvider: lazyFunction(() => (network?: Network, name?: string, password?: string) =>
-      getProvider(network ?? hre.network, hre.config.paths.accounts, name, password),
-    ),
+  hre.accounts = lazyObject(() => {
+    const {
+      HardhatEthersProvider,
+    } = require('@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider') as {
+      HardhatEthersProvider: typeof HardhatEthersProviderT
+    }
+
+    const provider = new HardhatEthersProvider(hre.network.provider, hre.network.name)
+
+    return {
+      provider: provider,
+      getSigner: (accountName?: string, accountPassword?: string) =>
+        getSigner(hre.config.paths.secureAccounts, provider, accountName, accountPassword),
+      getSigners: (accountName?: string, accountPassword?: string) =>
+        getSigners(hre.config.paths.secureAccounts, provider, accountName, accountPassword),
+    }
+  })
+})
+
+extendProvider(async (provider, config, network) => {
+  if (config.networks[network].secureAccounts?.enabled || config.secureAccounts?.enabled) {
+    const secureAccounts = getSecureAccounts(config.paths.secureAccounts)
+
+    if (secureAccounts.length !== 0) {
+      logDebug('Creating SecureAccounts provider')
+      const { SecureAccountsProvider } = require('./lib/provider') as {
+        SecureAccountsProvider: typeof SecureAccountsProviderT
+      }
+      const defaultAccount = config.networks[network].secureAccounts?.defaultAccount
+      const defaultAccountPassword = config.networks[network].secureAccounts?.defaultAccountPassword
+
+      return await SecureAccountsProvider.create(
+        provider,
+        config.paths.secureAccounts,
+        defaultAccount,
+        defaultAccountPassword,
+      )
+    } else {
+      logDebug('No accounts found, using default provider')
+    }
   }
+
+  return provider
 })

@@ -1,37 +1,35 @@
-import { Network } from 'hardhat/types'
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { HDNodeWallet, Mnemonic } from 'ethers'
+import { unlockAccount } from './account'
 
-import { logDebug } from '../helpers/logger'
-import { getProvider } from './provider'
+import type { EthereumProvider } from 'hardhat/types'
+import type { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider'
+
+export const DEFAULT_HD_COUNT = 20
+export const DEFAULT_HD_PATH_PREFIX = `m/44'/60'/0'/0/`
 
 export async function getSigner(
-  network: Network,
   accountsDir: string,
-  name?: string,
-  password?: string,
-): Promise<SignerWithAddress> { 
-  const provider = await getProvider(network, accountsDir, name, password)
-
-  const signer = provider.getSigner()
-  const signerWithAddress = await SignerWithAddress.create(signer)
-
-  logDebug(`Signer address: ${signerWithAddress.address}`)
-  return signerWithAddress
+  provider: HardhatEthersProvider,
+  accountName?: string,
+  accountPassword?: string,
+): Promise<HDNodeWallet> {
+  const phrase = await unlockAccount(accountsDir, accountName, accountPassword)
+  return deriveWallets(phrase, 1)[0].connect(provider)
 }
 
 export async function getSigners(
-  network: Network,
   accountsDir: string,
-  name?: string,
-  password?: string,
-): Promise<SignerWithAddress[]> {
-  const provider = await getProvider(network, accountsDir, name, password)
-  
-  const accounts = await provider.listAccounts()
-  const signersWithAddress = await Promise.all(
-    accounts.map((account) => SignerWithAddress.create(provider.getSigner(account))),
-  )
+  provider: HardhatEthersProvider,
+  accountName?: string,
+  accountPassword?: string,
+): Promise<HDNodeWallet[]> {
+  const phrase = await unlockAccount(accountsDir, accountName, accountPassword)
+  return deriveWallets(phrase, DEFAULT_HD_COUNT).map(w => w.connect(provider))
+}
 
-  logDebug(`Got ${accounts.length} accounts from provider`)
-  return signersWithAddress
+function deriveWallets(phrase: string, count: number): HDNodeWallet[] {
+  const mnemonic = Mnemonic.fromPhrase(phrase)
+  return Array.from(Array(count).keys()).map((i) =>
+    HDNodeWallet.fromMnemonic(mnemonic, `${DEFAULT_HD_PATH_PREFIX}${i}`),
+  )
 }
