@@ -149,6 +149,9 @@ const signer2 = await hre.accounts.getSigner('goerli-deployer', 'batman-with-che
 console.log(`Account ${signer2.address} unlocked!`)
 ```
 
+### Provider extension override
+Sometimes it might be useful to use the plugin without extending the provider, for example when running on a CI environment. This can be done by setting the `SECURE_ACCOUNTS_DISABLE_PROVIDER` environment variable to `true`.
+
 ## Configuration
 
 Plugin behavior can be modified via the Hardhat configuration file. The following options are available:
