@@ -1,6 +1,6 @@
 {
   "name": "hardhat-secure-accounts",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Account management plugin for Hardhat",
   "repository": "github:edgeandnode/hardhat-secure-accounts",
   "author": "Edge & Node",
